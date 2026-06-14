@@ -1,0 +1,148 @@
+// ============================================================
+//  Sales Performance Dashboard — DAX Measures Reference
+//  Paste each measure into Power BI Desktop > New Measure
+// ============================================================
+
+
+// ── REVENUE ──────────────────────────────────────────────────
+
+Total Revenue =
+SUM(sales_data[Revenue])
+
+Total Revenue 2024 =
+CALCULATE([Total Revenue], sales_data[Year] = 2024)
+
+Total Revenue 2023 =
+CALCULATE([Total Revenue], sales_data[Year] = 2023)
+
+YoY Revenue Growth % =
+DIVIDE(
+    [Total Revenue 2024] - [Total Revenue 2023],
+    [Total Revenue 2023]
+) * 100
+
+Revenue MTD =
+TOTALMTD([Total Revenue], sales_data[Date])
+
+Revenue QTD =
+TOTALQTD([Total Revenue], sales_data[Date])
+
+Revenue YTD =
+TOTALYTD([Total Revenue], sales_data[Date])
+
+Revenue PY =
+CALCULATE([Total Revenue], SAMEPERIODLASTYEAR(sales_data[Date]))
+
+Revenue vs PY % =
+DIVIDE([Total Revenue] - [Revenue PY], [Revenue PY]) * 100
+
+Cumulative Revenue =
+CALCULATE(
+    [Total Revenue],
+    FILTER(
+        ALL(sales_data[Date]),
+        sales_data[Date] <= MAX(sales_data[Date])
+    )
+)
+
+
+// ── ORDERS & VOLUME ──────────────────────────────────────────
+
+Total Orders =
+COUNTROWS(sales_data)
+
+Units Sold =
+SUM(sales_data[Quantity])
+
+Avg Order Value =
+DIVIDE([Total Revenue], [Total Orders])
+
+Avg Units Per Order =
+DIVIDE([Units Sold], [Total Orders])
+
+Avg Discount % =
+AVERAGEX(sales_data, sales_data[Discount]) * 100
+
+
+// ── RETURNS ──────────────────────────────────────────────────
+
+Total Returns =
+COUNTROWS(FILTER(sales_data, sales_data[Returned] = "Yes"))
+
+Return Rate % =
+DIVIDE([Total Returns], [Total Orders]) * 100
+
+Revenue Lost to Returns =
+CALCULATE(
+    [Total Revenue],
+    sales_data[Returned] = "Yes"
+)
+
+
+// ── REGIONAL ─────────────────────────────────────────────────
+
+Quota (Regional) =
+SUM(agg_regional_summary[Quota])
+
+Quota Attainment % =
+DIVIDE([Total Revenue], [Quota (Regional)]) * 100
+
+Above Quota Flag =
+IF([Quota Attainment %] >= 100, "✅ Above", "⚠️ Below")
+
+
+// ── PRODUCT ──────────────────────────────────────────────────
+
+Revenue Share % =
+DIVIDE(
+    [Total Revenue],
+    CALCULATE([Total Revenue], ALL(sales_data[Product]))
+) * 100
+
+Top Product =
+CALCULATE(
+    FIRSTNONBLANK(sales_data[Product], 1),
+    TOPN(1, VALUES(sales_data[Product]), [Total Revenue], DESC)
+)
+
+
+// ── SALES REP ────────────────────────────────────────────────
+
+Revenue Per Rep =
+DIVIDE(
+    [Total Revenue],
+    DISTINCTCOUNT(sales_data[Sales_Rep])
+)
+
+Top Rep Revenue =
+MAXX(
+    SUMMARIZE(sales_data, sales_data[Sales_Rep], "Rev", [Total Revenue]),
+    [Rev]
+)
+
+
+// ── CHANNEL ──────────────────────────────────────────────────
+
+Online Revenue =
+CALCULATE([Total Revenue], sales_data[Channel] = "Online")
+
+Retail Revenue =
+CALCULATE([Total Revenue], sales_data[Channel] = "Retail")
+
+Direct Revenue =
+CALCULATE([Total Revenue], sales_data[Channel] = "Direct")
+
+
+// ── KPI CARDS (formatted strings) ───────────────────────────
+
+KPI Revenue Label =
+"$" & FORMAT([Total Revenue 2024] / 1000000, "0.00") & "M"
+
+KPI YoY Label =
+"↑ " & FORMAT([YoY Revenue Growth %], "0.0") & "% vs 2023"
+
+KPI Return Label =
+FORMAT([Return Rate %], "0.0") & "%"
+
+KPI AOV Label =
+"$" & FORMAT([Avg Order Value], "0.00")
