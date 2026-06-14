@@ -1,20 +1,7 @@
-# Sales-Analysis-Dashboard
 # 📊 Sales Performance Dashboard — Power BI
 
 An end-to-end sales analytics project built with **Power BI**, **Excel**, and **Python**.  
 Covers revenue trends, regional quota attainment, product performance, and channel breakdown across **2023–2024**.
-
----
-
-## 📸 Dashboard Preview
-
-### Page 1 — Executive Overview
-![Dashboard Page 1](screenshots/report1.png)
-
-### Page 2 — Product & Regional Deep Dive
-![Dashboard Page 2](screenshots/report2.png)
-
----
 
 
 ---
